@@ -1,0 +1,29 @@
+server {
+    listen 80;
+    server_name app.example.com;
+
+    # current 是指向某个不可变 release 目录的软链接。
+    root /var/www/product/shell/current;
+
+    location = /_mf/remote-playground/current/mf-manifest.json {
+        alias /var/www/product/remotes/remote-playground/current/mf-manifest.json;
+        default_type application/json;
+        expires -1;
+        add_header Cache-Control "no-cache";
+    }
+
+    location ^~ /_mf/remote-playground/ {
+        alias /var/www/product/remotes/remote-playground/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location = /index.html {
+        expires -1;
+        add_header Cache-Control "no-cache";
+    }
+}

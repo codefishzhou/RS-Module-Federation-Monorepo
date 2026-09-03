@@ -1,0 +1,36 @@
+{
+  "name": "remote-playground",
+  "sourceRoot": "apps/remote-playground/src",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "rsbuild dev --config apps/remote-playground/rsbuild.config.ts --port 3001"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "rsbuild build --config apps/remote-playground/rsbuild.config.ts"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vue-tsc -p apps/remote-playground/tsconfig.json --noEmit"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint apps/remote-playground"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --config apps/remote-playground/vitest.config.ts"
+      }
+    }
+  }
+}
