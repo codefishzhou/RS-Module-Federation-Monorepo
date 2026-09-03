@@ -46,9 +46,9 @@ Nginx 应让 `/_mf/` 下不存在的文件直接返回 404，不能回退到 She
 
 ## GitHub CI/CD
 
-[`ci-cd.yml`](.github/workflows/ci-cd.yml) 参考 `a.yml`，在 Pull Request 中执行格式、
-Lint、类型、单元测试、Playwright 和构建检查；推送到 `dev` 分支或手动触发时，再将
-Shell 与 Remote 组装成一个 GitHub Pages 制品并部署。
+[`ci-cd.yml`](.github/workflows/ci-cd.yml) 参考 `a.yml`。推送到 `dev` 或创建 Pull Request
+时执行格式、Lint、类型、单元测试和 Playwright；推送到 `main` 时跳过测试，将 Shell
+与 Remote 组装成一个 GitHub Pages 制品并部署。
 
 首次使用前，需要在 GitHub 仓库的 **Settings > Pages > Build and deployment** 中将
 Source 设置为 **GitHub Actions**。项目站点会自动使用 `/<repository>/` 基础路径，

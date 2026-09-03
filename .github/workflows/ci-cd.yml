@@ -20,6 +20,7 @@ concurrency:
 
 jobs:
   verify:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
     env:
       CI: true
