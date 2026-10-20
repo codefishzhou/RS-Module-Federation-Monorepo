@@ -17,6 +17,30 @@ pnpm dev
 - Remote: <http://localhost:3001>
 - Remote manifest: <http://localhost:3001/mf-manifest.json>
 
+## 嵌入独立 HTML 工具
+
+不需要参与 Vue 编译的独立 HTML 工具统一放在：
+
+```text
+apps/shell/public/embedded-tools/<tool-id>/
+├── index.html
+├── assets/
+├── styles.css
+└── main.js
+```
+
+入口文件固定为 `index.html`，HTML 内的 CSS、JavaScript、图片等资源使用相对路径。新增工具后，
+在 [`apps/shell/src/tools.ts`](apps/shell/src/tools.ts) 的 `htmlTools` 中登记名称、说明和入口即可。
+构建时目录会原样复制到 `dist/apps/shell/embedded-tools/`，Shell 通过 `/tools/:toolId` 路由在
+沙箱 `iframe` 中加载它。示例位于
+[`apps/shell/public/embedded-tools/json-formatter`](apps/shell/public/embedded-tools/json-formatter)。
+已有的 ZIP 批量重命名工具位于
+[`apps/shell/public/embedded-tools/batch-rename`](apps/shell/public/embedded-tools/batch-rename)。
+
+默认沙箱允许脚本、表单、下载和弹窗，但不授予同源权限。工具如果必须访问 Shell 登录态、
+Cookie 或内部 API，不应直接放宽沙箱；应先设计明确的 `postMessage` 通信协议，或者将其改造成
+Vue 模块/Module Federation Remote。
+
 ## 验证
 
 ```bash

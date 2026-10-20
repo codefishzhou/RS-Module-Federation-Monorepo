@@ -84,6 +84,105 @@ h1 {
 .panel p {
   color: #5f6d82;
 }
+.section-heading,
+.tool-workspace__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+.section-heading {
+  margin-bottom: 20px;
+}
+.tool-count {
+  color: #5f6d82;
+  font-size: 13px;
+}
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+.tool-card {
+  display: grid;
+  min-height: 108px;
+  grid-template-columns: 42px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #d7dde6;
+  border-radius: 6px;
+  background: #fff;
+  color: #172033;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.tool-card:hover {
+  border-color: #8391a5;
+  box-shadow: 0 8px 20px rgb(23 32 51 / 8%);
+}
+.tool-card__mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 4px;
+  background: #e8f2ee;
+  color: #12664f;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-weight: 700;
+}
+.tool-card strong,
+.tool-card small {
+  display: block;
+}
+.tool-card small {
+  margin-top: 6px;
+  color: #5f6d82;
+  line-height: 1.45;
+}
+.tool-card__arrow {
+  color: #68778c;
+  font-size: 20px;
+}
+.tool-workspace {
+  min-width: 0;
+}
+.tool-workspace__header {
+  margin-bottom: 18px;
+}
+.tool-workspace__header h2 {
+  margin: 10px 0 6px;
+}
+.tool-workspace__header p {
+  margin-bottom: 0;
+  color: #5f6d82;
+}
+.back-link,
+.open-tool {
+  color: #12664f;
+  text-decoration: none;
+}
+.back-link:hover,
+.open-tool:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.open-tool {
+  flex: 0 0 auto;
+  padding-top: 4px;
+  font-size: 14px;
+}
+.tool-frame {
+  display: block;
+  width: 100%;
+  height: clamp(520px, calc(100vh - 260px), 900px);
+  border: 1px solid #d7dde6;
+  border-radius: 6px;
+  background: #fff;
+}
 .error {
   color: #b42318 !important;
 }
@@ -99,5 +198,17 @@ h1 {
   .shell__actions {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .section-heading,
+  .tool-workspace__header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tool-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tool-frame {
+    height: calc(100vh - 290px);
+    min-height: 480px;
   }
 }

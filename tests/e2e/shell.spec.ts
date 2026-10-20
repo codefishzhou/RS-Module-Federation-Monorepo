@@ -18,3 +18,13 @@ test('remote playground runs independently', async ({ page }) => {
   await page.goto('http://localhost:3001')
   await expect(page.getByRole('heading', { name: '独立 Remote 已加载' })).toBeVisible()
 })
+
+test('shell embeds a static HTML tool', async ({ page }) => {
+  await page.goto('/tools/json-formatter')
+  await expect(page.getByRole('heading', { name: '产品 Shell' })).toBeVisible()
+
+  const tool = page.frameLocator('iframe[title="JSON 格式化"]')
+  await expect(tool.getByRole('heading', { name: 'JSON 格式化' })).toBeVisible()
+  await tool.getByRole('button', { name: '格式化' }).click()
+  await expect(tool.getByRole('status')).toHaveText('JSON 有效，已处理')
+})
