@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ZIP 压缩与解压</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+      :root {
+        color: #172033;
+        background: #f7f8fa;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        min-width: 280px;
+        margin: 0;
+        padding: 24px;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button,
+      .file-label {
+        display: inline-flex;
+        min-height: 38px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 14px;
+        border: 1px solid #c8d0db;
+        border-radius: 4px;
+        background: #fff;
+        color: #172033;
+        cursor: pointer;
+      }
+      button:hover:not(:disabled),
+      .file-label:hover {
+        border-color: #718096;
+        background: #f3f5f7;
+      }
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+      button.primary {
+        border-color: #12664f;
+        background: #12664f;
+        color: #fff;
+      }
+      button.primary:hover:not(:disabled) {
+        border-color: #0c503d;
+        background: #0c503d;
+      }
+      button.danger,
+      .icon-button {
+        color: #a22a20;
+      }
+      .app {
+        width: min(100%, 1040px);
+        margin: 0 auto;
+      }
+      .app-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      h1,
+      h2,
+      p {
+        margin-top: 0;
+      }
+      h1 {
+        margin-bottom: 6px;
+        font-size: 22px;
+      }
+      h2 {
+        margin-bottom: 4px;
+        font-size: 17px;
+      }
+      .subtitle {
+        margin-bottom: 0;
+        color: #5f6d82;
+        line-height: 1.5;
+      }
+      .privacy {
+        flex: 0 0 auto;
+        padding: 6px 9px;
+        border: 1px solid #bad8ce;
+        border-radius: 4px;
+        background: #edf7f3;
+        color: #12664f;
+        font-size: 12px;
+      }
+      .tabs {
+        display: inline-grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3px;
+        margin-bottom: 18px;
+        padding: 3px;
+        border: 1px solid #d7dde6;
+        border-radius: 6px;
+        background: #edf0f3;
+      }
+      .tab {
+        min-width: 116px;
+        border: 0;
+        background: transparent;
+      }
+      .tab[aria-selected="true"] {
+        background: #fff;
+        box-shadow: 0 1px 3px rgb(23 32 51 / 12%);
+        color: #12664f;
+        font-weight: 600;
+      }
+      .workspace[hidden] {
+        display: none;
+      }
+      .dropzone {
+        display: grid;
+        min-height: 150px;
+        place-items: center;
+        padding: 22px;
+        border: 1px dashed #93a1b3;
+        border-radius: 6px;
+        background: #fff;
+        text-align: center;
+        transition: 150ms ease;
+      }
+      .dropzone.dragging {
+        border-color: #12664f;
+        background: #edf7f3;
+      }
+      .dropzone strong,
+      .dropzone span {
+        display: block;
+      }
+      .dropzone strong {
+        margin-bottom: 7px;
+        font-size: 16px;
+      }
+      .dropzone span {
+        margin-bottom: 14px;
+        color: #68778c;
+        font-size: 13px;
+      }
+      .drop-actions,
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      input[type="file"] {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+      }
+      .panel {
+        margin-top: 14px;
+        border: 1px solid #d7dde6;
+        border-radius: 6px;
+        background: #fff;
+      }
+      .panel-header {
+        display: flex;
+        min-height: 54px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 14px;
+        border-bottom: 1px solid #e2e7ed;
+      }
+      .summary {
+        margin: 0;
+        color: #526071;
+        font-size: 13px;
+      }
+      .file-list {
+        max-height: 310px;
+        margin: 0;
+        padding: 0;
+        overflow: auto;
+        list-style: none;
+      }
+      .file-row {
+        display: grid;
+        min-height: 48px;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 14px;
+        border-bottom: 1px solid #edf0f3;
+      }
+      .file-row:last-child {
+        border-bottom: 0;
+      }
+      .file-name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+      }
+      .file-size {
+        color: #68778c;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .icon-button {
+        width: 34px;
+        min-height: 34px;
+        padding: 0;
+        font-size: 18px;
+      }
+      .download-button {
+        min-height: 32px;
+        padding: 0 10px;
+        color: #12664f;
+        font-size: 12px;
+      }
+      .empty {
+        padding: 34px 16px;
+        color: #7a8799;
+        text-align: center;
+        font-size: 13px;
+      }
+      .settings {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) minmax(160px, 220px) auto;
+        align-items: end;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .field label {
+        display: block;
+        margin-bottom: 6px;
+        color: #526071;
+        font-size: 12px;
+      }
+      .field input,
+      .field select {
+        width: 100%;
+        height: 40px;
+        border: 1px solid #c8d0db;
+        border-radius: 4px;
+        padding: 0 10px;
+        background: #fff;
+        color: #172033;
+      }
+      .field input:focus,
+      .field select:focus {
+        border-color: #12664f;
+        box-shadow: 0 0 0 3px rgb(18 102 79 / 12%);
+        outline: none;
+      }
+      .status-area {
+        min-height: 42px;
+        margin-top: 14px;
+      }
+      .status {
+        margin: 0;
+        color: #526071;
+        font-size: 13px;
+      }
+      .status.error {
+        color: #b42318;
+      }
+      .status.success {
+        color: #12664f;
+      }
+      progress {
+        width: 100%;
+        height: 6px;
+        margin-top: 8px;
+        accent-color: #12664f;
+      }
+      .archive-heading {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .archive-heading h2,
+      .archive-heading p {
+        margin-bottom: 0;
+      }
+      @media (max-width: 700px) {
+        body {
+          padding: 16px;
+        }
+        .app-header,
+        .panel-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .settings {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .settings .primary {
+          width: 100%;
+        }
+        .file-row {
+          grid-template-columns: minmax(0, 1fr) auto;
+        }
+        .file-row .file-size {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="app-header">
+        <div>
+          <h1>ZIP 压缩与解压</h1>
+          <p class="subtitle">创建 ZIP 压缩包，或查看并提取已有 ZIP 文件。</p>
+        </div>
+        <span class="privacy">文件仅在本地处理</span>
+      </header>
+
+      <div class="tabs" role="tablist" aria-label="操作模式">
+        <button class="tab" id="compress-tab" role="tab" aria-selected="true" aria-controls="compress-panel">压缩</button>
+        <button class="tab" id="extract-tab" role="tab" aria-selected="false" aria-controls="extract-panel">解压</button>
+      </div>
+
+      <section class="workspace" id="compress-panel" role="tabpanel" aria-labelledby="compress-tab">
+        <div class="dropzone" id="compress-dropzone">
+          <div>
+            <strong>拖入要压缩的文件</strong>
+            <span>支持多文件和完整文件夹，单次建议不超过 500 MB</span>
+            <div class="drop-actions">
+              <label class="file-label" for="compress-files">选择文件</label>
+              <input id="compress-files" type="file" multiple />
+              <label class="file-label" for="compress-folder">选择文件夹</label>
+              <input id="compress-folder" type="file" webkitdirectory multiple />
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <p class="summary" id="compress-summary">尚未添加文件</p>
+            <button class="danger" id="clear-compress" type="button" disabled>清空</button>
+          </div>
+          <ul class="file-list" id="compress-list">
+            <li class="empty">选择文件后会在这里显示</li>
+          </ul>
+        </div>
+
+        <div class="settings">
+          <div class="field">
+            <label for="archive-name">压缩包名称</label>
+            <input id="archive-name" type="text" value="archive" maxlength="80" />
+          </div>
+          <div class="field">
+            <label for="compression-level">压缩级别</label>
+            <select id="compression-level">
+              <option value="1">快速</option>
+              <option value="6" selected>平衡</option>
+              <option value="9">最小体积</option>
+            </select>
+          </div>
+          <button class="primary" id="create-zip" type="button" disabled>生成 ZIP</button>
+        </div>
+
+        <div class="status-area">
+          <p class="status" id="compress-status" role="status">等待添加文件</p>
+          <progress id="compress-progress" max="100" value="0" hidden></progress>
+        </div>
+      </section>
+
+      <section class="workspace" id="extract-panel" role="tabpanel" aria-labelledby="extract-tab" hidden>
+        <div class="dropzone" id="extract-dropzone">
+          <div>
+            <strong>拖入一个 ZIP 文件</strong>
+            <span>读取后可查看目录，并下载单个文件或全部文件</span>
+            <label class="file-label" for="extract-file">选择 ZIP</label>
+            <input id="extract-file" type="file" accept=".zip,application/zip" />
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="archive-heading">
+              <h2 id="archive-title">ZIP 内容</h2>
+              <p class="summary" id="extract-summary">尚未读取文件</p>
+            </div>
+            <div class="toolbar">
+              <button id="clear-extract" type="button" disabled>清空</button>
+              <button class="primary" id="download-all" type="button" disabled>下载全部</button>
+            </div>
+          </div>
+          <ul class="file-list" id="extract-list">
+            <li class="empty">选择 ZIP 后会在这里显示</li>
+          </ul>
+        </div>
+
+        <div class="status-area">
+          <p class="status" id="extract-status" role="status">等待选择 ZIP 文件</p>
+          <progress id="extract-progress" max="100" value="0" hidden></progress>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const MAX_TOTAL_SIZE = 500 * 1024 * 1024
+      const compressFiles = new Map()
+      let loadedZip = null
+      let loadedEntries = []
+
+      const elements = Object.fromEntries(
+        [
+          'compress-tab', 'extract-tab', 'compress-panel', 'extract-panel', 'compress-dropzone',
+          'compress-files', 'compress-folder', 'compress-list', 'compress-summary', 'clear-compress',
+          'archive-name', 'compression-level', 'create-zip', 'compress-status', 'compress-progress',
+          'extract-dropzone', 'extract-file', 'archive-title', 'extract-summary', 'extract-list',
+          'clear-extract', 'download-all', 'extract-status', 'extract-progress',
+        ].map((id) => [id, document.getElementById(id)]),
+      )
+
+      function formatBytes(bytes) {
+        if (!Number.isFinite(bytes) || bytes === 0) return '0 B'
+        const units = ['B', 'KB', 'MB', 'GB']
+        const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+        return `${(bytes / 1024 ** index).toFixed(index === 0 ? 0 : 1)} ${units[index]}`
+      }
+
+      function setStatus(element, message, type = '') {
+        element.className = `status${type ? ` ${type}` : ''}`
+        element.textContent = message
+      }
+
+      function setMode(mode) {
+        const compressing = mode === 'compress'
+        elements['compress-tab'].setAttribute('aria-selected', String(compressing))
+        elements['extract-tab'].setAttribute('aria-selected', String(!compressing))
+        elements['compress-panel'].hidden = !compressing
+        elements['extract-panel'].hidden = compressing
+      }
+
+      function safePath(path) {
+        return path.replaceAll('\\', '/').split('/').filter((part) => part && part !== '.' && part !== '..').join('/')
+      }
+
+      function safeArchiveName(name) {
+        return (name || 'archive').replace(/\.zip$/i, '').replace(/[\\/:*?"<>|]/g, '-').trim().slice(0, 80) || 'archive'
+      }
+
+      function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = filename
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+      }
+
+      function renderCompressFiles() {
+        const items = [...compressFiles.values()]
+        const total = items.reduce((sum, item) => sum + item.file.size, 0)
+        elements['compress-list'].replaceChildren()
+
+        if (!items.length) {
+          const empty = document.createElement('li')
+          empty.className = 'empty'
+          empty.textContent = '选择文件后会在这里显示'
+          elements['compress-list'].appendChild(empty)
+        }
+
+        for (const item of items) {
+          const row = document.createElement('li')
+          row.className = 'file-row'
+          const name = document.createElement('span')
+          name.className = 'file-name'
+          name.title = item.path
+          name.textContent = item.path
+          const size = document.createElement('span')
+          size.className = 'file-size'
+          size.textContent = formatBytes(item.file.size)
+          const remove = document.createElement('button')
+          remove.className = 'icon-button'
+          remove.type = 'button'
+          remove.title = `移除 ${item.path}`
+          remove.setAttribute('aria-label', `移除 ${item.path}`)
+          remove.textContent = '×'
+          remove.addEventListener('click', () => {
+            compressFiles.delete(item.path)
+            renderCompressFiles()
+          })
+          row.append(name, size, remove)
+          elements['compress-list'].appendChild(row)
+        }
+
+        elements['compress-summary'].textContent = items.length
+          ? `${items.length} 个文件，共 ${formatBytes(total)}` : '尚未添加文件'
+        elements['clear-compress'].disabled = !items.length
+        elements['create-zip'].disabled = !items.length || total > MAX_TOTAL_SIZE
+        if (total > MAX_TOTAL_SIZE) {
+          setStatus(elements['compress-status'], '文件总大小超过 500 MB，请减少文件后重试。', 'error')
+        } else {
+          setStatus(elements['compress-status'], items.length ? '文件已准备，可生成 ZIP。' : '等待添加文件')
+        }
+      }
+
+      function addCompressFiles(fileList) {
+        for (const file of fileList) {
+          const path = safePath(file.webkitRelativePath || file.name)
+          if (path) compressFiles.set(path, { file, path })
+        }
+        renderCompressFiles()
+      }
+
+      function bindDropzone(dropzone, onFiles) {
+        for (const eventName of ['dragenter', 'dragover']) {
+          dropzone.addEventListener(eventName, (event) => {
+            event.preventDefault()
+            dropzone.classList.add('dragging')
+          })
+        }
+        for (const eventName of ['dragleave', 'drop']) {
+          dropzone.addEventListener(eventName, (event) => {
+            event.preventDefault()
+            dropzone.classList.remove('dragging')
+          })
+        }
+        dropzone.addEventListener('drop', (event) => onFiles(event.dataTransfer.files))
+      }
+
+      async function createZipArchive() {
+        if (!window.JSZip) {
+          setStatus(elements['compress-status'], '压缩组件加载失败，请检查网络后刷新页面。', 'error')
+          return
+        }
+        const items = [...compressFiles.values()]
+        if (!items.length) return
+        elements['create-zip'].disabled = true
+        elements['compress-progress'].hidden = false
+        setStatus(elements['compress-status'], '正在创建 ZIP...')
+        try {
+          const zip = new JSZip()
+          for (const item of items) zip.file(item.path, item.file)
+          const blob = await zip.generateAsync(
+            { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: Number(elements['compression-level'].value) } },
+            ({ percent, currentFile }) => {
+              elements['compress-progress'].value = percent
+              setStatus(elements['compress-status'], `正在压缩 ${currentFile || ''} ${Math.round(percent)}%`)
+            },
+          )
+          const filename = `${safeArchiveName(elements['archive-name'].value)}.zip`
+          downloadBlob(blob, filename)
+          setStatus(elements['compress-status'], `${filename} 已生成，大小 ${formatBytes(blob.size)}。`, 'success')
+        } catch (error) {
+          setStatus(elements['compress-status'], `压缩失败：${error.message}`, 'error')
+        } finally {
+          elements['compress-progress'].hidden = true
+          renderCompressFiles()
+        }
+      }
+
+      function renderExtractEntries() {
+        elements['extract-list'].replaceChildren()
+        const total = loadedEntries.reduce((sum, entry) => sum + (entry.size || 0), 0)
+        if (!loadedEntries.length) {
+          const empty = document.createElement('li')
+          empty.className = 'empty'
+          empty.textContent = loadedZip ? '该 ZIP 中没有可提取的文件' : '选择 ZIP 后会在这里显示'
+          elements['extract-list'].appendChild(empty)
+        }
+        for (const entry of loadedEntries) {
+          const row = document.createElement('li')
+          row.className = 'file-row'
+          const name = document.createElement('span')
+          name.className = 'file-name'
+          name.title = entry.path
+          name.textContent = entry.path
+          const size = document.createElement('span')
+          size.className = 'file-size'
+          size.textContent = entry.size ? formatBytes(entry.size) : 'ZIP 文件'
+          const download = document.createElement('button')
+          download.className = 'download-button'
+          download.type = 'button'
+          download.textContent = '下载'
+          download.addEventListener('click', () => downloadEntry(entry))
+          row.append(name, size, download)
+          elements['extract-list'].appendChild(row)
+        }
+        elements['extract-summary'].textContent = loadedZip
+          ? `${loadedEntries.length} 个文件${total ? `，约 ${formatBytes(total)}` : ''}` : '尚未读取文件'
+        elements['clear-extract'].disabled = !loadedZip
+        elements['download-all'].disabled = !loadedEntries.length
+      }
+
+      async function loadZipFile(file) {
+        if (!file) return
+        if (!window.JSZip) {
+          setStatus(elements['extract-status'], '解压组件加载失败，请检查网络后刷新页面。', 'error')
+          return
+        }
+        if (file.size > MAX_TOTAL_SIZE) {
+          setStatus(elements['extract-status'], 'ZIP 文件超过 500 MB，浏览器内处理可能耗尽内存。', 'error')
+          return
+        }
+        elements['extract-progress'].hidden = false
+        elements['extract-progress'].removeAttribute('value')
+        setStatus(elements['extract-status'], '正在读取 ZIP...')
+        try {
+          const zip = await JSZip.loadAsync(file, { checkCRC32: false })
+          const entries = []
+          for (const [rawPath, zipEntry] of Object.entries(zip.files)) {
+            if (zipEntry.dir) continue
+            const path = safePath(rawPath)
+            if (!path) continue
+            entries.push({ path, filename: path.split('/').pop() || 'file', zipEntry, size: zipEntry._data?.uncompressedSize || 0 })
+          }
+          loadedZip = zip
+          loadedEntries = entries.sort((a, b) => a.path.localeCompare(b.path, 'zh-CN'))
+          elements['archive-title'].textContent = file.name
+          renderExtractEntries()
+          setStatus(elements['extract-status'], loadedEntries.length ? 'ZIP 读取完成，可下载文件。' : 'ZIP 中没有可提取的文件。', loadedEntries.length ? 'success' : '')
+        } catch (error) {
+          loadedZip = null
+          loadedEntries = []
+          elements['archive-title'].textContent = 'ZIP 内容'
+          renderExtractEntries()
+          const message = /encrypted|password/i.test(error.message)
+            ? '暂不支持加密 ZIP，请先移除密码。' : `无法读取 ZIP：${error.message}`
+          setStatus(elements['extract-status'], message, 'error')
+        } finally {
+          elements['extract-progress'].hidden = true
+          elements['extract-progress'].value = 0
+        }
+      }
+
+      async function downloadEntry(entry, quiet = false) {
+        try {
+          if (!quiet) setStatus(elements['extract-status'], `正在提取 ${entry.path}...`)
+          const blob = await entry.zipEntry.async('blob')
+          downloadBlob(blob, entry.filename)
+          if (!quiet) setStatus(elements['extract-status'], `${entry.filename} 已下载。`, 'success')
+        } catch (error) {
+          setStatus(elements['extract-status'], `提取失败：${error.message}`, 'error')
+          throw error
+        }
+      }
+
+      async function downloadAllEntries() {
+        if (!loadedEntries.length) return
+        if (loadedEntries.length > 10 && !window.confirm(`浏览器将连续下载 ${loadedEntries.length} 个文件，是否继续？`)) return
+        elements['download-all'].disabled = true
+        elements['extract-progress'].hidden = false
+        try {
+          for (let index = 0; index < loadedEntries.length; index += 1) {
+            const entry = loadedEntries[index]
+            setStatus(elements['extract-status'], `正在提取 ${index + 1}/${loadedEntries.length}：${entry.path}`)
+            await downloadEntry(entry, true)
+            elements['extract-progress'].value = ((index + 1) / loadedEntries.length) * 100
+            await new Promise((resolve) => window.setTimeout(resolve, 120))
+          }
+          setStatus(elements['extract-status'], `已请求下载 ${loadedEntries.length} 个文件。若未全部保存，请允许浏览器多文件下载。`, 'success')
+        } catch {
+          // downloadEntry reports the error.
+        } finally {
+          elements['download-all'].disabled = false
+          elements['extract-progress'].hidden = true
+        }
+      }
+
+      function clearExtract() {
+        loadedZip = null
+        loadedEntries = []
+        elements['extract-file'].value = ''
+        elements['archive-title'].textContent = 'ZIP 内容'
+        renderExtractEntries()
+        setStatus(elements['extract-status'], '等待选择 ZIP 文件')
+      }
+
+      elements['compress-tab'].addEventListener('click', () => setMode('compress'))
+      elements['extract-tab'].addEventListener('click', () => setMode('extract'))
+      elements['compress-files'].addEventListener('change', (event) => addCompressFiles(event.target.files))
+      elements['compress-folder'].addEventListener('change', (event) => addCompressFiles(event.target.files))
+      elements['extract-file'].addEventListener('change', (event) => loadZipFile(event.target.files[0]))
+      elements['clear-compress'].addEventListener('click', () => {
+        compressFiles.clear()
+        elements['compress-files'].value = ''
+        elements['compress-folder'].value = ''
+        renderCompressFiles()
+      })
+      elements['create-zip'].addEventListener('click', createZipArchive)
+      elements['clear-extract'].addEventListener('click', clearExtract)
+      elements['download-all'].addEventListener('click', downloadAllEntries)
+
+      bindDropzone(elements['compress-dropzone'], addCompressFiles)
+      bindDropzone(elements['extract-dropzone'], (files) => {
+        const zipFile = [...files].find((file) => /\.zip$/i.test(file.name))
+        if (zipFile) loadZipFile(zipFile)
+        else setStatus(elements['extract-status'], '请拖入扩展名为 .zip 的文件。', 'error')
+      })
+
+      if (!window.JSZip) {
+        setStatus(elements['compress-status'], '压缩组件加载失败，请检查网络后刷新页面。', 'error')
+        setStatus(elements['extract-status'], '解压组件加载失败，请检查网络后刷新页面。', 'error')
+      }
+    </script>
+  </body>
+</html>

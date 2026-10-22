@@ -2,11 +2,13 @@ import { defineConfig } from '@rsbuild/core'
 import { pluginModuleFederation } from '@module-federation/rsbuild-plugin'
 import { pluginVue } from '@rsbuild/plugin-vue'
 
+const shellPort = Number(process.env.SHELL_PORT ?? 3000)
+const remotePort = Number(process.env.REMOTE_PLAYGROUND_PORT ?? 3001)
 const remoteUrl =
   process.env.REMOTE_PLAYGROUND_URL ??
   (process.env.NODE_ENV === 'production'
     ? '/_mf/remote-playground/current/mf-manifest.json'
-    : 'http://localhost:3001/mf-manifest.json')
+    : `http://localhost:${remotePort}/mf-manifest.json`)
 const publicPath = process.env.PUBLIC_PATH ?? '/'
 const routerMode = process.env.ROUTER_MODE ?? 'history'
 
@@ -44,6 +46,11 @@ export default defineConfig({
     distPath: { root: 'dist/apps/shell' },
   },
   server: {
-    port: 3000,
+    port: shellPort,
+    strictPort: true,
+    publicDir: {
+      name: 'apps/shell/public',
+      copyOnBuild: true,
+    },
   },
 })

@@ -9,6 +9,7 @@
         <nav aria-label="主导航">
           <RouterLink to="/">首页</RouterLink>
           <RouterLink to="/playground">Playground</RouterLink>
+          <RouterLink to="/tools">HTML 工具</RouterLink>
         </nav>
         <span class="status">独立部署骨架</span>
       </div>

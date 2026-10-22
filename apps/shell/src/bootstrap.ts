@@ -9,7 +9,7 @@ const app = createApp(App)
 const queryClient = new QueryClient()
 
 app.use(createPinia())
-app.use(VueQueryPlugin, { queryClient })
+app.use(VueQueryPlugin, { queryClient }) 
 app.use(router)
 app.component(
   'RemotePlayground',
