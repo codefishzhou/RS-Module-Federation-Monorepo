@@ -5,7 +5,7 @@
     "dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "rsbuild dev --config apps/shell/rsbuild.config.ts --port 3000"
+        "command": "rsbuild dev --config apps/shell/rsbuild.config.ts"
       }
     },
     "build": {

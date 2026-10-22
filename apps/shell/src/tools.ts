@@ -12,6 +12,12 @@ export const htmlTools: HtmlTool[] = [
     description: '校验、格式化并压缩 JSON 文本。',
     entry: 'embedded-tools/json-formatter/index.html',
   },
+  {
+    id: 'zip-manager',
+    name: 'ZIP 压缩与解压',
+    description: '在浏览器本地压缩文件或文件夹，并查看、解压 ZIP 内容。',
+    entry: 'embedded-tools/zip-manager/index.html',
+  },
 ]
 
 export function findHtmlTool(toolId: unknown) {

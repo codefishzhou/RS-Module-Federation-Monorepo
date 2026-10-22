@@ -4,7 +4,7 @@ import { findHtmlTool, resolvePublicUrl } from './tools'
 describe('HTML tools', () => {
   it('resolves a registered tool', () => {
     expect(findHtmlTool('json-formatter')?.entry).toBe('embedded-tools/json-formatter/index.html')
-    expect(findHtmlTool('batch-rename')?.entry).toBe('embedded-tools/batch-rename/index.html')
+    expect(findHtmlTool('zip-manager')?.entry).toBe('embedded-tools/zip-manager/index.html')
     expect(findHtmlTool('unknown')).toBeUndefined()
   })
 

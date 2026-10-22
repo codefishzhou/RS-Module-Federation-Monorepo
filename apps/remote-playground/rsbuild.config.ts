@@ -2,6 +2,9 @@ import { defineConfig } from '@rsbuild/core'
 import { pluginModuleFederation } from '@module-federation/rsbuild-plugin'
 import { pluginVue } from '@rsbuild/plugin-vue'
 
+const shellPort = Number(process.env.SHELL_PORT ?? 3000)
+const remotePort = Number(process.env.REMOTE_PLAYGROUND_PORT ?? 3001)
+
 export default defineConfig({
   plugins: [
     pluginVue(),
@@ -33,9 +36,10 @@ export default defineConfig({
     distPath: { root: 'dist/apps/remote-playground' },
   },
   server: {
-    port: 3001,
+    port: remotePort,
+    strictPort: true,
     cors: {
-      origin: 'http://localhost:3000',
+      origin: `http://localhost:${shellPort}`,
     },
   },
 })
