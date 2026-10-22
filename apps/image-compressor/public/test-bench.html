@@ -1,0 +1,57 @@
+<!doctype html>
+<html><body><pre id="log">Loading…</pre>
+<script type="module">
+const log = document.getElementById('log')
+function out(s) { log.textContent += '\n' + s }
+
+import { encode as encJpeg } from '/node_modules/.pnpm/@jsquash+jpeg@1.6.0/node_modules/@jsquash/jpeg/encode.js'
+import { encode as encWebp } from '/node_modules/.pnpm/@jsquash+webp@1.5.0/node_modules/@jsquash/webp/encode.js'
+import { encode as encPng } from '/node_modules/.pnpm/@jsquash+png@3.1.1/node_modules/@jsquash/png/encode.js'
+
+async function test(name, url) {
+  const resp = await fetch(url)
+  const buf = await resp.arrayBuffer()
+  const origSize = buf.byteLength
+  const bitmap = await createImageBitmap(new Blob([buf]))
+  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(bitmap, 0, 0)
+  const data = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
+  bitmap.close()
+
+  out(`\n=== ${name} ===`)
+  out(`Original: ${(origSize/1024/1024).toFixed(2)} MB  (${bitmap.width}x${bitmap.height})`)
+
+  const qualities = [80, 60, 50, 40]
+
+  for (const q of qualities) {
+    try {
+      const webp = await encWebp(data, { quality: q/100, method: 6, pass: 6 })
+      const r = ((1 - webp.byteLength / origSize) * 100).toFixed(1)
+      out(`  WebP q=${q}: ${(webp.byteLength/1024/1024).toFixed(2)} MB  ↓${r}%`)
+    } catch(e) { out(`  WebP q=${q}: ERROR ${e.message}`) }
+  }
+
+  for (const q of qualities) {
+    try {
+      const jpeg = await encJpeg(data, { quality: q/100, progressive: true, optimize_coding: true, trellis_multipass: true, trellis_opt_zero: true, trellis_opt_table: true, trellis_loops: 8, auto_subsample: true })
+      const r = ((1 - jpeg.byteLength / origSize) * 100).toFixed(1)
+      out(`  JPEG q=${q}: ${(jpeg.byteLength/1024/1024).toFixed(2)} MB  ↓${r}%`)
+    } catch(e) { out(`  JPEG q=${q}: ERROR ${e.message}`) }
+  }
+
+  try {
+    const png = await encPng(data)
+    const r = ((1 - png.byteLength / origSize) * 100).toFixed(1)
+    out(`  PNG lossless: ${(png.byteLength/1024/1024).toFixed(2)} MB  ↓${r}%`)
+  } catch(e) { out(`  PNG lossless: ERROR ${e.message}`) }
+}
+
+try {
+  await test('PNG 4MB', '/test/image.png')
+  await test('JPEG 5.9MB', '/test/photo.jpg')
+  out('\n=== DONE ===')
+} catch(e) {
+  out('FATAL: ' + e.stack)
+}
+</script></body></html>

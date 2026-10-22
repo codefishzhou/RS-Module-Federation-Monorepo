@@ -18,6 +18,12 @@ export const htmlTools: HtmlTool[] = [
     description: '在浏览器本地压缩文件或文件夹，并查看、解压 ZIP 内容。',
     entry: 'embedded-tools/zip-manager/index.html',
   },
+  {
+    id: 'image-compressor',
+    name: '图片压缩',
+    description: '在浏览器本地压缩 PNG、JPEG、WebP 图片，支持对比和批量下载。',
+    entry: 'embedded-tools/image-compressor/index.html',
+  },
 ]
 
 export function findHtmlTool(toolId: unknown) {

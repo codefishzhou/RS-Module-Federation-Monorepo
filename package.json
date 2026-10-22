@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "build": "NX_DAEMON=false nx run-many -t build --projects=shell,remote-playground --parallel=2",
+    "build": "NX_DAEMON=false nx run-many -t build --projects=shell,remote-playground,image-compressor --parallel=3",
     "lint": "NX_DAEMON=false nx run-many -t lint",
     "typecheck": "NX_DAEMON=false nx run-many -t typecheck",
     "test": "NX_DAEMON=false nx run-many -t test",

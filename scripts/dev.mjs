@@ -5,6 +5,7 @@ import process from 'node:process'
 
 const DEFAULT_SHELL_PORT = 3000
 const DEFAULT_REMOTE_PORT = 3001
+const DEFAULT_IMAGE_COMPRESSOR_PORT = 3002
 
 function readStartingPort(value, fallback, variableName) {
   if (value === undefined) return fallback
@@ -40,12 +41,19 @@ const remoteStartingPort = readStartingPort(
   DEFAULT_REMOTE_PORT,
   'REMOTE_PLAYGROUND_PORT',
 )
+const imageCompressorStartingPort = readStartingPort(
+  process.env.IMAGE_COMPRESSOR_PORT,
+  DEFAULT_IMAGE_COMPRESSOR_PORT,
+  'IMAGE_COMPRESSOR_PORT',
+)
 const shellPort = await findAvailablePort(shellStartingPort)
 const remotePort = await findAvailablePort(remoteStartingPort, new Set([shellPort]))
+const imageCompressorPort = await findAvailablePort(imageCompressorStartingPort, new Set([shellPort, remotePort]))
 const remoteUrl = `http://localhost:${remotePort}/mf-manifest.json`
 
 console.log(`开发端口：Shell http://localhost:${shellPort}`)
 console.log(`开发端口：Remote http://localhost:${remotePort}`)
+console.log(`开发端口：Image Compressor http://localhost:${imageCompressorPort}`)
 
 const corepack = process.platform === 'win32' ? 'corepack.cmd' : 'corepack'
 const supportsProcessGroups = process.platform !== 'win32'
@@ -58,8 +66,8 @@ const child = spawn(
     'run-many',
     '-t',
     'dev',
-    '--projects=shell,remote-playground',
-    '--parallel=2',
+    '--projects=shell,remote-playground,image-compressor',
+    '--parallel=3',
   ],
   {
     env: {
@@ -69,6 +77,7 @@ const child = spawn(
       SHELL_PORT: String(shellPort),
       REMOTE_PLAYGROUND_PORT: String(remotePort),
       REMOTE_PLAYGROUND_URL: remoteUrl,
+      IMAGE_COMPRESSOR_PORT: String(imageCompressorPort),
     },
     detached: supportsProcessGroups,
     stdio: 'inherit',

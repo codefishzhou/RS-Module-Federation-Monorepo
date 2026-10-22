@@ -1,0 +1,30 @@
+{
+  "name": "image-compressor",
+  "sourceRoot": "apps/image-compressor/src",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "rsbuild dev --config apps/image-compressor/rsbuild.config.ts"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "rsbuild build --config apps/image-compressor/rsbuild.config.ts"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vue-tsc -p apps/image-compressor/tsconfig.json --noEmit"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint apps/image-compressor"
+      }
+    }
+  }
+}
