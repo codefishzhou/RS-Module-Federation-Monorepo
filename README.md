@@ -5,6 +5,8 @@ author: codefishzhou
 本仓库提供单产品、多应用的最小工程骨架。业务未确定前，`shell` 承载产品功能，
 `remote-playground` 仅验证 Module Federation 的独立构建和加载链路。
 
+在线预览：<https://codefishzhou.github.io/RS-Module-Federation-Monorepo/#/>
+
 ## 本地开发
 
 ```bash
