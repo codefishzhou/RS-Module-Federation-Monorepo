@@ -23,7 +23,7 @@ interface ImageItem {
 
 let nextId = 0
 const items = ref<ImageItem[]>([])
-const quality = ref(85)
+const quality = ref(75)
 const compareIndex = ref<number | null>(null)
 const isCompressing = ref(false)
 
