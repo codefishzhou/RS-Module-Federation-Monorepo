@@ -104,10 +104,12 @@ jobs:
           fi
           echo "base_path=$base_path" >> "$GITHUB_OUTPUT"
           echo "remote_path=${base_path}_mf/remote-playground/current/" >> "$GITHUB_OUTPUT"
+          echo "image_compressor_path=${base_path}_mf/image-compressor/current/" >> "$GITHUB_OUTPUT"
 
       - name: Build applications
         env:
           PUBLIC_PATH: ${{ steps.paths.outputs.base_path }}
+          IMAGE_COMPRESSOR_PUBLIC_PATH: ${{ steps.paths.outputs.image_compressor_path }}
           ROUTER_MODE: hash
           REMOTE_PLAYGROUND_URL: ${{ steps.paths.outputs.remote_path }}mf-manifest.json
           MF_ASSET_PREFIX: ${{ steps.paths.outputs.remote_path }}
