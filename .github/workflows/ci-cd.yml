@@ -117,8 +117,10 @@ jobs:
         shell: bash
         run: |
           mkdir -p pages-dist/_mf/remote-playground/current
+          mkdir -p pages-dist/_mf/image-compressor/current
           cp -R dist/apps/shell/. pages-dist/
           cp -R dist/apps/remote-playground/. pages-dist/_mf/remote-playground/current/
+          cp -R dist/apps/image-compressor/. pages-dist/_mf/image-compressor/current/
           touch pages-dist/.nojekyll
 
       - name: Upload GitHub Pages artifact
