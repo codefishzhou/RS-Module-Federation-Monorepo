@@ -23,7 +23,7 @@ interface ImageItem {
 
 let nextId = 0
 const items = ref<ImageItem[]>([])
-const quality = ref(60)
+const quality = ref(85)
 const compareIndex = ref<number | null>(null)
 const isCompressing = ref(false)
 
@@ -67,7 +67,6 @@ async function compressAll() {
     } catch (e) {
       item.status = 'error'
       item.error = String(e)
-      console.error('[compress error]', item.name, e)
     }
   }
   isCompressing.value = false
@@ -84,6 +83,15 @@ function removeItem(id: number) {
   else if (compareIndex.value !== null && compareIndex.value > idx) compareIndex.value--
 }
 
+function clearAll() {
+  for (const item of items.value) {
+    URL.revokeObjectURL(item.originalUrl)
+    if (item.compressedUrl) URL.revokeObjectURL(item.compressedUrl)
+  }
+  items.value = []
+  compareIndex.value = null
+}
+
 function openCompare(id: number) {
   compareIndex.value = items.value.findIndex((i) => i.id === id)
 }
@@ -97,6 +105,12 @@ const compareItem = computed(() => {
   return items.value[compareIndex.value]
 })
 
+function getOutputName(item: ImageItem): string {
+  const ext = item.format === 'jpeg' ? 'jpg' : item.format
+  const base = item.name.replace(/\.[^.]+$/, '')
+  return `${base}.${ext}`
+}
+
 async function downloadAll() {
   const JSZip = (await import('jszip')).default
   const { saveAs } = await import('file-saver')
@@ -104,7 +118,7 @@ async function downloadAll() {
   const done = items.value.filter((i) => i.status === 'done')
   for (const item of done) {
     const resp = await fetch(item.compressedUrl)
-    zip.file(item.name, await resp.arrayBuffer())
+    zip.file(getOutputName(item), await resp.arrayBuffer())
   }
   const blob = await zip.generateAsync({ type: 'blob' })
   saveAs(blob, 'compressed-images.zip')
@@ -152,7 +166,8 @@ async function downloadAll() {
     </div>
 
     <div v-if="allDone" class="app__batch">
-      <button class="app__batch-btn" @click="downloadAll">打包下载 ZIP</button>
+      <button class="app__batch-btn" @click="downloadAll">📦 批量下载 ZIP</button>
+      <button class="app__batch-btn app__batch-btn--secondary" @click="clearAll">清空</button>
     </div>
 
     <Teleport to="body">
@@ -194,7 +209,10 @@ async function downloadAll() {
 .app__controls {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 24px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 .app__summary {
   display: flex;
@@ -203,6 +221,7 @@ async function downloadAll() {
   margin: 16px 0;
   font-size: 14px;
   color: #6b7280;
+  flex-wrap: wrap;
 }
 .app__ratio {
   font-weight: 600;
@@ -221,7 +240,9 @@ async function downloadAll() {
   margin-top: 16px;
 }
 .app__batch {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
   margin-top: 16px;
 }
 .app__batch-btn {
@@ -236,6 +257,13 @@ async function downloadAll() {
 }
 .app__batch-btn:hover {
   background: #4f46e5;
+}
+.app__batch-btn--secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+.app__batch-btn--secondary:hover {
+  background: #d1d5db;
 }
 .modal {
   position: fixed;

@@ -6,8 +6,7 @@ import resize from '@jsquash/resize'
 export type OutputFormat = 'jpeg' | 'png' | 'webp'
 
 export interface CompressOptions {
-  quality: number
-  outputFormat?: OutputFormat
+  quality: number // 1-100
   maxWidth?: number
   maxHeight?: number
 }
@@ -22,14 +21,12 @@ export interface CompressResult {
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
 async function loadImage(file: File): Promise<ImageData> {
-  console.log('[compress] loadImage:', file.name, file.type, file.size)
   const bitmap = await createImageBitmap(file)
   const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
   const ctx = canvas.getContext('2d')!
   ctx.drawImage(bitmap, 0, 0)
   const data = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
   bitmap.close()
-  console.log('[compress] imageData:', data.width, 'x', data.height)
   return data
 }
 
@@ -49,91 +46,150 @@ async function maybeResize(
   return resize(data, { width: Math.round(width * scale), height: Math.round(height * scale) })
 }
 
-async function encodeOne(
-  data: ImageData,
-  format: OutputFormat,
-  quality: number,
-): Promise<Blob> {
-  console.log('[compress] encodeOne:', format, 'quality:', quality)
-  switch (format) {
-    case 'jpeg': {
-      const buf = await encodeJpeg(data, {
-        quality,
-        progressive: true,
-        optimize_coding: true,
-        trellis_multipass: true,
-        trellis_opt_zero: true,
-        trellis_opt_table: true,
-        trellis_loops: 8,
-        auto_subsample: true,
-      })
-      console.log('[compress] jpeg result:', buf?.byteLength, 'bytes')
-      return new Blob([buf], { type: 'image/jpeg' })
-    }
-    case 'webp': {
-      const buf = await encodeWebp(data, {
-        quality,
-        method: 6,
-        pass: 6,
-        filter_strength: 20,
-        sns_strength: 50,
-        segments: 4,
-        partition_limit: 2,
-      })
-      console.log('[compress] webp result:', buf?.byteLength, 'bytes')
-      return new Blob([buf], { type: 'image/webp' })
-    }
-    case 'png': {
-      const buf = await encodePng(data)
-      console.log('[compress] png result:', buf?.byteLength, 'bytes')
-      return new Blob([buf], { type: 'image/png' })
-    }
-  }
+// Map UI quality to encoder quality. Keeps values high to preserve visual quality.
+// UI 85 → 0.88, UI 50 → 0.74
+function toEncoderQ(ui: number): number {
+  return 0.48 + (ui / 100) * 0.52
 }
 
+// ---- Encoders ----
+
+async function jpegOptimized(data: ImageData, q: number): Promise<Blob> {
+  const buf = await encodeJpeg(data, {
+    quality: q,
+    progressive: true,
+    optimize_coding: true,
+    trellis_multipass: true,
+    trellis_opt_zero: true,
+    trellis_opt_table: true,
+    trellis_loops: 8,
+    auto_subsample: true,
+  })
+  return new Blob([buf], { type: 'image/jpeg' })
+}
+
+async function webpLossless(data: ImageData): Promise<Blob> {
+  const buf = await encodeWebp(data, {
+    quality: 100,
+    lossless: 1,
+    method: 6,
+    pass: 1,
+    exact: 1,
+  })
+  return new Blob([buf], { type: 'image/webp' })
+}
+
+async function webpLossy(data: ImageData, q: number): Promise<Blob> {
+  const buf = await encodeWebp(data, {
+    quality: q,
+    lossless: 0,
+    method: 6,
+    pass: 6,
+    filter_strength: 10,
+    sns_strength: 20,
+    segments: 4,
+  })
+  return new Blob([buf], { type: 'image/webp' })
+}
+
+async function pngOptimized(data: ImageData): Promise<Blob> {
+  const buf = await encodePng(data)
+  return new Blob([buf], { type: 'image/png' })
+}
+
+// ---- Per-format strategies (output format matches input) ----
+
+async function compressAsPng(data: ImageData, originalSize: number, uiQuality: number): Promise<Blob> {
+  // For PNG output: try lossless WebP (as PNG alternative), optimized PNG, then lossy WebP
+  // Pick the smallest that preserves quality best
+  const candidates: { blob: Blob; size: number }[] = []
+
+  try {
+    const b = await pngOptimized(data)
+    candidates.push({ blob: b, size: b.size })
+  } catch { /* skip */ }
+
+  try {
+    const b = await webpLossless(data)
+    candidates.push({ blob: b, size: b.size })
+  } catch { /* skip */ }
+
+  // Only try lossy if quality slider is low
+  if (uiQuality < 80) {
+    try {
+      const b = await webpLossy(data, toEncoderQ(uiQuality))
+      candidates.push({ blob: b, size: b.size })
+    } catch { /* skip */ }
+  }
+
+  if (candidates.length === 0) throw new Error('PNG encoding failed')
+  const smaller = candidates.filter(c => c.size < originalSize)
+  const pool = smaller.length > 0 ? smaller : candidates
+  return pool.reduce((a, b) => a.size < b.size ? a : b).blob
+}
+
+async function compressAsJpeg(data: ImageData, originalSize: number, uiQuality: number): Promise<Blob> {
+  const encoderQ = toEncoderQ(uiQuality)
+  const candidates: { blob: Blob; size: number }[] = []
+
+  try {
+    const b = await jpegOptimized(data, encoderQ)
+    candidates.push({ blob: b, size: b.size })
+  } catch { /* skip */ }
+
+  if (candidates.length === 0) throw new Error('JPEG encoding failed')
+  const smaller = candidates.filter(c => c.size < originalSize)
+  const pool = smaller.length > 0 ? smaller : candidates
+  return pool.reduce((a, b) => a.size < b.size ? a : b).blob
+}
+
+async function compressAsWebp(data: ImageData, originalSize: number, uiQuality: number): Promise<Blob> {
+  const candidates: { blob: Blob; size: number }[] = []
+
+  try {
+    const b = await webpLossless(data)
+    candidates.push({ blob: b, size: b.size })
+  } catch { /* skip */ }
+
+  if (uiQuality < 90) {
+    try {
+      const b = await webpLossy(data, toEncoderQ(uiQuality))
+      candidates.push({ blob: b, size: b.size })
+    } catch { /* skip */ }
+  }
+
+  if (candidates.length === 0) throw new Error('WebP encoding failed')
+  const smaller = candidates.filter(c => c.size < originalSize)
+  const pool = smaller.length > 0 ? smaller : candidates
+  return pool.reduce((a, b) => a.size < b.size ? a : b).blob
+}
+
+// ---- Main entry ----
+
 export async function compress(file: File, options: CompressOptions): Promise<CompressResult> {
-  console.log('[compress] start:', file.name, 'quality:', options.quality)
   let data = await loadImage(file)
   data = await maybeResize(data, options.maxWidth, options.maxHeight)
   const { width, height } = data
 
+  // Output format matches input format
+  const format: OutputFormat =
+    file.type === 'image/png' ? 'png'
+    : file.type === 'image/webp' ? 'webp'
+    : 'jpeg'
+
   let blob: Blob
-  let format: OutputFormat
 
-  if (options.outputFormat) {
-    const q = options.quality / 100
-    blob = await encodeOne(data, options.outputFormat, q)
-    format = options.outputFormat
-  } else {
-    // Auto: try WebP first (best compression), then original format
-    const sourceType = file.type
-    const tryFormats: OutputFormat[] =
-      sourceType === 'image/png'
-        ? ['webp', 'png']
-        : sourceType === 'image/webp'
-          ? ['webp']
-          : ['jpeg', 'webp']
-
-    let best: { blob: Blob; format: OutputFormat; size: number } | null = null
-
-    for (const fmt of tryFormats) {
-      try {
-        const q = options.quality / 100
-        const resultBlob = await encodeOne(data, fmt, q)
-        if (!best || resultBlob.size < best.size) {
-          best = { blob: resultBlob, format: fmt, size: resultBlob.size }
-        }
-      } catch (e) {
-        console.warn('[compress] format', fmt, 'failed:', e)
-      }
-    }
-
-    if (!best) throw new Error('All encoding attempts failed')
-    blob = best.blob
-    format = best.format
+  switch (format) {
+    case 'png':
+      blob = await compressAsPng(data, file.size, options.quality)
+      break
+    case 'jpeg':
+      blob = await compressAsJpeg(data, file.size, options.quality)
+      break
+    case 'webp':
+      blob = await compressAsWebp(data, file.size, options.quality)
+      break
   }
-
-  console.log('[compress] done:', format, blob.size, 'bytes, original:', file.size)
 
   // If compressed is larger, return original bytes
   if (blob.size > file.size) {

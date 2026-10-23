@@ -12,7 +12,7 @@ const model = defineModel<number>({ required: true })
 <style scoped>
 .quality {
   display: flex;
-  align-items: center;
+  align-items: center;·
   gap: 12px;
 }
 .quality__label {

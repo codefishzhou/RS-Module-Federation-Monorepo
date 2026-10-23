@@ -21,6 +21,10 @@ const emit = defineEmits<{
 const ratio = computed(() => compressionRatio(props.originalSize, props.compressedSize))
 const saved = computed(() => props.originalSize - props.compressedSize)
 const isSmaller = computed(() => props.compressedSize < props.originalSize)
+const downloadName = computed(() => {
+  const ext = props.format === 'jpeg' ? 'jpg' : props.format
+  return props.name.replace(/\.[^.]+$/, '') + '.' + ext
+})
 </script>
 
 <template>
@@ -44,7 +48,7 @@ const isSmaller = computed(() => props.compressedSize < props.originalSize)
       </p>
     </div>
     <div class="card__actions">
-      <a :href="compressedUrl" :download="name" class="card__btn" title="下载">⬇</a>
+      <a :href="compressedUrl" :download="downloadName" class="card__btn" title="下载">⬇</a>
       <button class="card__btn card__btn--compare" @click="$emit('compare')" title="对比">⇔</button>
       <button class="card__btn card__btn--remove" @click="$emit('remove')" title="移除">✕</button>
     </div>
