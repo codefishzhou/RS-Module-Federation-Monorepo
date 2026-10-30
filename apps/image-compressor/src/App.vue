@@ -30,7 +30,9 @@ const isCompressing = ref(false)
 const totalOriginal = computed(() => items.value.reduce((s, i) => s + i.originalSize, 0))
 const totalCompressed = computed(() => items.value.reduce((s, i) => s + i.compressedSize, 0))
 const hasItems = computed(() => items.value.length > 0)
-const allDone = computed(() => items.value.length > 0 && items.value.every((i) => i.status === 'done'))
+const allDone = computed(
+  () => items.value.length > 0 && items.value.every((i) => i.status === 'done'),
+)
 
 async function onFiles(files: File[]) {
   const newItems: ImageItem[] = files.map((file) => ({
@@ -128,19 +130,25 @@ async function downloadAll() {
 <template>
   <div class="app">
     <header class="app__header">
-      <h1>📷 图片压缩</h1>
-      <p>在浏览器本地压缩图片，数据不会上传到服务器</p>
+      <div>
+        <span class="app__kicker">图像工作台</span>
+        <h1>图片压缩</h1>
+        <p>调整画质、对比结果，然后一次下载全部文件。</p>
+      </div>
+      <span class="app__privacy"><i aria-hidden="true" /> 仅在本地处理</span>
     </header>
 
     <div class="app__controls">
+      <span class="app__controls-label">输出设置</span>
       <QualitySlider v-model="quality" />
     </div>
 
     <DropZone @files="onFiles" />
 
     <div v-if="hasItems" class="app__summary">
-      <span>共 {{ items.length }} 张</span>
-      <span>原始 {{ formatFileSize(totalOriginal) }} → 压缩后 {{ formatFileSize(totalCompressed) }}</span>
+      <span><strong>{{ items.length }}</strong> 张图片</span>
+      <span>原始 {{ formatFileSize(totalOriginal) }} / 压缩后
+        {{ formatFileSize(totalCompressed) }}</span>
       <span v-if="totalOriginal > 0" class="app__ratio">
         节省 {{ compressionRatio(totalOriginal, totalCompressed) }}
       </span>
@@ -166,7 +174,7 @@ async function downloadAll() {
     </div>
 
     <div v-if="allDone" class="app__batch">
-      <button class="app__batch-btn" @click="downloadAll">📦 批量下载 ZIP</button>
+      <button class="app__batch-btn" @click="downloadAll">批量下载 ZIP</button>
       <button class="app__batch-btn app__batch-btn--secondary" @click="clearAll">清空</button>
     </div>
 
@@ -186,84 +194,138 @@ async function downloadAll() {
 </template>
 
 <style scoped>
+:global(*) {
+  box-sizing: border-box;
+}
+:global(body) {
+  min-width: 320px;
+  margin: 0;
+  background: #f3f5f2;
+}
 .app {
-  max-width: 800px;
+  width: min(100%, 960px);
   margin: 0 auto;
-  padding: 24px;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
-  color: #1f2937;
+  padding: 40px clamp(20px, 5vw, 56px) 56px;
+  font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
+  color: #18221f;
 }
 .app__header {
-  text-align: center;
-  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #d7ddd9;
 }
 .app__header h1 {
-  font-size: 28px;
-  margin: 0 0 4px;
+  margin: 4px 0 7px;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: 0;
 }
 .app__header p {
-  font-size: 14px;
-  color: #6b7280;
   margin: 0;
+  color: #66736e;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.app__kicker {
+  color: #197052;
+  font-family: SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+}
+.app__privacy {
+  display: inline-flex;
+  min-height: 32px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #b8c8c1;
+  border-radius: 4px;
+  padding: 0 11px;
+  background: #e7f0eb;
+  color: #11563e;
+  font-size: 12px;
+}
+.app__privacy i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #57b78c;
 }
 .app__controls {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 24px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 64px;
+  margin-bottom: 14px;
+  padding: 0 18px;
+  border: 1px solid #d0d8d4;
+  border-radius: 5px;
+  background: #fff;
+}
+.app__controls-label {
+  color: #66736e;
+  font-size: 13px;
+  font-weight: 600;
 }
 .app__summary {
   display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin: 16px 0;
-  font-size: 14px;
-  color: #6b7280;
+  align-items: center;
+  gap: 20px;
+  margin: 18px 0 10px;
+  color: #66736e;
+  font-size: 13px;
   flex-wrap: wrap;
+}
+.app__summary strong {
+  color: #18221f;
+  font-size: 16px;
 }
 .app__ratio {
   font-weight: 600;
-  color: #059669;
+  color: #197052;
 }
 .app__status {
-  text-align: center;
-  padding: 8px;
-  font-size: 14px;
-  color: #6366f1;
+  padding: 10px 0;
+  color: #197052;
+  font-size: 13px;
 }
 .app__list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 12px;
 }
 .app__batch {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 .app__batch-btn {
-  padding: 10px 24px;
-  border: none;
-  border-radius: 8px;
-  background: #6366f1;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #11563e;
+  border-radius: 4px;
+  background: #11563e;
   color: #fff;
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 650;
   cursor: pointer;
 }
 .app__batch-btn:hover {
-  background: #4f46e5;
+  background: #0d4935;
 }
 .app__batch-btn--secondary {
-  background: #e5e7eb;
-  color: #374151;
+  border-color: #bdc7c2;
+  background: #fff;
+  color: #39453f;
 }
 .app__batch-btn--secondary:hover {
-  background: #d1d5db;
+  background: #e9eeeb;
 }
 .modal {
   position: fixed;
@@ -272,7 +334,8 @@ async function downloadAll() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
+  padding: 24px;
+  background: rgb(12 19 16 / 82%);
 }
 .modal__content {
   position: relative;
@@ -286,10 +349,38 @@ async function downloadAll() {
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgb(255 255 255 / 45%);
+  border-radius: 4px;
+  background: rgb(12 19 16 / 72%);
   color: #fff;
   font-size: 16px;
   cursor: pointer;
+}
+button:focus-visible {
+  outline: 3px solid rgb(25 112 82 / 28%);
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .app {
+    padding-top: 26px;
+  }
+  .app__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .app__header h1 {
+    font-size: 30px;
+  }
+  .app__controls {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 14px;
+  }
+  .app__batch {
+    flex-direction: column;
+  }
+  .app__batch-btn {
+    width: 100%;
+  }
 }
 </style>

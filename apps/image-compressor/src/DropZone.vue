@@ -27,26 +27,35 @@ function filterFiles(fileList?: FileList | null): File[] {
 <template>
   <div class="dropzone" @dragover.prevent @drop="onDrop">
     <label class="dropzone__label">
-      <span class="dropzone__icon">📷</span>
-      <span class="dropzone__text">拖拽图片到这里，或点击选择</span>
-      <span class="dropzone__hint">支持 PNG、JPEG、WebP</span>
-      <input type="file" multiple :accept="ACCEPTED_TYPES.join(',')" class="dropzone__input" @change="onChange" />
+      <span class="dropzone__icon" aria-hidden="true"><i /></span>
+      <span class="dropzone__text">拖入图片，或从设备选择</span>
+      <span class="dropzone__hint">PNG、JPEG、WebP · 支持多选</span>
+      <input
+        type="file"
+        multiple
+        :accept="ACCEPTED_TYPES.join(',')"
+        class="dropzone__input"
+        @change="onChange"
+      >
     </label>
   </div>
 </template>
 
 <style scoped>
 .dropzone {
-  border: 2px dashed #d1d5db;
-  border-radius: 12px;
-  padding: 48px 24px;
+  border: 1px dashed #8fa39a;
+  border-radius: 5px;
+  padding: 44px 24px;
+  background: #fff;
   text-align: center;
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 .dropzone:hover,
 .dropzone:active {
-  border-color: #6366f1;
-  background: #f5f3ff;
+  border-color: #197052;
+  background: #edf3f0;
 }
 .dropzone__label {
   display: flex;
@@ -56,17 +65,43 @@ function filterFiles(fileList?: FileList | null): File[] {
   cursor: pointer;
 }
 .dropzone__icon {
-  font-size: 48px;
-  line-height: 1;
+  position: relative;
+  display: block;
+  width: 48px;
+  height: 38px;
+  margin-bottom: 5px;
+  border: 1px solid #7c9188;
+  border-radius: 4px;
+}
+.dropzone__icon::before {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d99124;
+  content: '';
+}
+.dropzone__icon::after {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  left: 7px;
+  height: 15px;
+  border-right: 1px solid #197052;
+  border-bottom: 1px solid #197052;
+  transform: skew(-28deg);
+  content: '';
 }
 .dropzone__text {
-  font-size: 18px;
-  font-weight: 500;
-  color: #374151;
+  color: #26332e;
+  font-size: 16px;
+  font-weight: 600;
 }
 .dropzone__hint {
-  font-size: 14px;
-  color: #9ca3af;
+  color: #74817c;
+  font-size: 12px;
 }
 .dropzone__input {
   display: none;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const props = defineProps<{
+defineProps<{
   originalUrl: string
   compressedUrl: string
   name: string
@@ -35,10 +35,21 @@ function onPointerUp() {
 </script>
 
 <template>
-  <div class="compare" ref="container" @pointerdown="onPointerDown" @pointermove="onPointerMove" @pointerup="onPointerUp">
-    <img class="compare__img compare__img--original" :src="originalUrl" :alt="name" draggable="false" />
+  <div
+    ref="container"
+    class="compare"
+    @pointerdown="onPointerDown"
+    @pointermove="onPointerMove"
+    @pointerup="onPointerUp"
+  >
+    <img
+      class="compare__img compare__img--original"
+      :src="originalUrl"
+      :alt="name"
+      draggable="false"
+    >
     <div class="compare__overlay" :style="{ width: position + '%' }">
-      <img class="compare__img" :src="compressedUrl" :alt="name" draggable="false" />
+      <img class="compare__img" :src="compressedUrl" :alt="name" draggable="false">
     </div>
     <div class="compare__slider" :style="{ left: position + '%' }" />
     <span class="compare__label compare__label--left">压缩后</span>
@@ -50,7 +61,8 @@ function onPointerUp() {
 .compare {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 5px;
   cursor: ew-resize;
   user-select: none;
   touch-action: none;
@@ -79,7 +91,7 @@ function onPointerUp() {
 .compare__slider {
   position: absolute;
   top: 0;
-  width: 2px;
+  width: 3px;
   height: 100%;
   background: #fff;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
@@ -89,8 +101,8 @@ function onPointerUp() {
   position: absolute;
   bottom: 12px;
   padding: 2px 8px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.6);
+  border-radius: 3px;
+  background: rgb(12 19 16 / 76%);
   color: #fff;
   font-size: 12px;
   pointer-events: none;

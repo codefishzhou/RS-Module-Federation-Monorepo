@@ -12,11 +12,11 @@ const toolUrl = computed(() => (tool.value ? resolvePublicUrl(tool.value.entry) 
   <section v-if="tool" class="tool-workspace">
     <header class="tool-workspace__header">
       <div>
-        <RouterLink class="back-link" :to="{ name: 'tools' }">&#8592; 返回工具列表</RouterLink>
+        <RouterLink class="back-link" :to="{ name: 'tools' }">‹ 返回工具列表</RouterLink>
         <h2>{{ tool.name }}</h2>
         <p>{{ tool.description }}</p>
       </div>
-      <a class="open-tool" :href="toolUrl" target="_blank" rel="noopener noreferrer">新窗口打开</a>
+      <a class="open-tool" :href="toolUrl" target="_blank" rel="noopener noreferrer">新窗口 ↗</a>
     </header>
 
     <iframe
@@ -29,7 +29,7 @@ const toolUrl = computed(() => (tool.value ? resolvePublicUrl(tool.value.entry) 
 
   <section v-else class="panel">
     <h2>工具不存在</h2>
-    <p>该工具未登记或已经下线。</p>
+    <p>该工具未登记或已经下线，请返回列表选择其他工具。</p>
     <RouterLink :to="{ name: 'tools' }">返回工具列表</RouterLink>
   </section>
 </template>

@@ -4,6 +4,7 @@ import { pluginVue } from '@rsbuild/plugin-vue'
 
 const shellPort = Number(process.env.SHELL_PORT ?? 3000)
 const remotePort = Number(process.env.REMOTE_PLAYGROUND_PORT ?? 3001)
+const imageCompressorPort = Number(process.env.IMAGE_COMPRESSOR_PORT ?? 3002)
 const remoteUrl =
   process.env.REMOTE_PLAYGROUND_URL ??
   (process.env.NODE_ENV === 'production'
@@ -11,6 +12,9 @@ const remoteUrl =
     : `http://localhost:${remotePort}/mf-manifest.json`)
 const publicPath = process.env.PUBLIC_PATH ?? '/'
 const routerMode = process.env.ROUTER_MODE ?? 'history'
+const imageCompressorUrl =
+  process.env.IMAGE_COMPRESSOR_URL ??
+  (process.env.NODE_ENV === 'production' ? '' : `http://localhost:${imageCompressorPort}/`)
 
 export default defineConfig({
   plugins: [
@@ -36,6 +40,7 @@ export default defineConfig({
     define: {
       'process.env.APP_BASE_PATH': JSON.stringify(publicPath),
       'process.env.ROUTER_MODE': JSON.stringify(routerMode),
+      'process.env.IMAGE_COMPRESSOR_URL': JSON.stringify(imageCompressorUrl),
     },
   },
   html: {

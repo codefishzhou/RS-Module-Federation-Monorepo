@@ -4,8 +4,15 @@ const model = defineModel<number>({ required: true })
 
 <template>
   <div class="quality">
-    <label class="quality__label">质量：<strong>{{ model }}%</strong></label>
-    <input type="range" min="1" max="100" v-model.number="model" class="quality__range" />
+    <label class="quality__label" for="quality-range">图片质量 <strong>{{ model }}%</strong></label>
+    <input
+      id="quality-range"
+      v-model.number="model"
+      type="range"
+      min="1"
+      max="100"
+      class="quality__range"
+    >
   </div>
 </template>
 
@@ -16,12 +23,25 @@ const model = defineModel<number>({ required: true })
   gap: 12px;
 }
 .quality__label {
-  font-size: 14px;
-  color: #374151;
+  color: #39453f;
+  font-size: 13px;
   white-space: nowrap;
+}
+.quality__label strong {
+  margin-left: 5px;
+  color: #11563e;
+  font-family: SFMono-Regular, Consolas, monospace;
 }
 .quality__range {
   width: 200px;
-  accent-color: #6366f1;
+  accent-color: #197052;
+}
+@media (max-width: 480px) {
+  .quality {
+    width: 100%;
+  }
+  .quality__range {
+    width: 100%;
+  }
 }
 </style>

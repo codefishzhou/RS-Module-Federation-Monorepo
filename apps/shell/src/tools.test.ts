@@ -15,5 +15,8 @@ describe('HTML tools', () => {
     expect(
       resolvePublicUrl('embedded-tools/demo/index.html', '/RS-Module-Federation-Monorepo/'),
     ).toBe('/RS-Module-Federation-Monorepo/embedded-tools/demo/index.html')
+    expect(resolvePublicUrl('http://localhost:3002/', '/repository/')).toBe(
+      'http://localhost:3002/',
+    )
   })
 })

@@ -140,12 +140,7 @@ export async function compress(file: File, options: CompressOptions): Promise<Co
     }
     case 'webp': {
       const candidates: { blob: Blob; size: number }[] = []
-      for (const nl of [80, 60, 40]) {
-        try {
-          const b = await webpNearLossless(data, nl)
-          candidates.push({ blob: b, size: b.size })
-        } catch { /* skip */ }
-      }
+
       try {
         const b = await webpLossless(data)
         candidates.push({ blob: b, size: b.size })

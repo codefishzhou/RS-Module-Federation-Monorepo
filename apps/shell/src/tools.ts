@@ -22,7 +22,7 @@ export const htmlTools: HtmlTool[] = [
     id: 'image-compressor',
     name: '图片压缩',
     description: '在浏览器本地压缩 PNG、JPEG、WebP 图片，支持对比和批量下载。',
-    entry: '_mf/image-compressor/current/index.html',
+    entry: process.env.IMAGE_COMPRESSOR_URL || '_mf/image-compressor/current/index.html',
   },
 ]
 
@@ -31,6 +31,8 @@ export function findHtmlTool(toolId: unknown) {
 }
 
 export function resolvePublicUrl(entry: string, basePath = process.env.APP_BASE_PATH ?? '/') {
+  if (/^[a-z][a-z\d+.-]*:/i.test(entry)) return entry
+
   const normalizedBase = basePath.endsWith('/') ? basePath : `${basePath}/`
   return `${normalizedBase}${entry.replace(/^\/+/, '')}`
 }

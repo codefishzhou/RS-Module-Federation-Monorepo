@@ -6,26 +6,21 @@
     <title>JSON 格式化</title>
     <style>
       :root {
-        color: #172033;
-        background: #f7f8fa;
+        color: #18221f;
+        background: #f3f5f2;
         font-family:
-          Inter,
-          ui-sans-serif,
-          system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          sans-serif;
+          "Avenir Next", Avenir, "Segoe UI", sans-serif;
       }
       * {
         box-sizing: border-box;
       }
       body {
         margin: 0;
-        padding: 24px;
+        padding: clamp(18px, 4vw, 34px);
       }
       main {
         display: grid;
-        min-height: calc(100vh - 48px);
+        min-height: calc(100vh - 68px);
         grid-template-rows: auto 1fr auto;
         gap: 16px;
       }
@@ -37,7 +32,8 @@
       }
       h1 {
         margin: 0;
-        font-size: 20px;
+        font-size: 24px;
+        font-weight: 600;
       }
       .actions {
         display: flex;
@@ -47,27 +43,27 @@
       button {
         min-height: 38px;
         padding: 0 14px;
-        border: 1px solid #c8d0db;
+        border: 1px solid #bdc7c2;
         border-radius: 4px;
         background: #fff;
-        color: #172033;
+        color: #18221f;
         cursor: pointer;
         font: inherit;
       }
       button.primary {
-        border-color: #12664f;
-        background: #12664f;
+        border-color: #11563e;
+        background: #11563e;
         color: #fff;
       }
       textarea {
         width: 100%;
         min-height: 360px;
         resize: vertical;
-        border: 1px solid #c8d0db;
-        border-radius: 6px;
-        padding: 16px;
+        border: 1px solid #aebbb5;
+        border-radius: 5px;
+        padding: 18px;
         background: #fff;
-        color: #172033;
+        color: #18221f;
         font:
           14px/1.6 ui-monospace,
           SFMono-Regular,
@@ -76,13 +72,13 @@
         outline: none;
       }
       textarea:focus {
-        border-color: #12664f;
-        box-shadow: 0 0 0 3px rgb(18 102 79 / 12%);
+        border-color: #197052;
+        box-shadow: 0 0 0 3px rgb(25 112 82 / 14%);
       }
       #status {
         min-height: 20px;
         margin: 0;
-        color: #526071;
+        color: #66736e;
         font-size: 13px;
       }
       #status.error {
